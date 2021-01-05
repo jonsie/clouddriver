@@ -68,10 +68,13 @@ class LocalFileUserDataProvider implements UserDataProvider {
   }
 
   @Override
-  String getUserData(String launchConfigName, LaunchConfigurationBuilder.LaunchConfigurationSettings settings, Boolean legacyUdf) {
+  String getUserData(String launchConfigName,
+                     LaunchConfigurationBuilder.LaunchConfigurationSettings settings,
+                     Boolean legacyUdf,
+                     String udfTemplate) {
     def names = Names.parseName(settings.baseName)
     boolean useLegacyUdf = legacyUdf != null ? legacyUdf : isLegacyUdf(settings.account, names.app)
-    def rawUserData = assembleUserData(useLegacyUdf, names, settings.region, settings.account)
+    def rawUserData = assembleUserData(useLegacyUdf, names, settings.region, settings.account, udfTemplate)
     def userDataRequest = UserDataRequest
       .builder()
       .asgName(settings.baseName)
@@ -90,11 +93,11 @@ class LocalFileUserDataProvider implements UserDataProvider {
   String getUserData(UserDataRequest userDataRequest) {
     def names = Names.parseName(userDataRequest.asgName)
     boolean useLegacyUdf = userDataRequest.legacyUdf != null ? userDataRequest.legacyUdf : isLegacyUdf(userDataRequest.account, names.app)
-    def rawUserData = assembleUserData(useLegacyUdf, names, userDataRequest.region, userDataRequest.account)
+    def rawUserData = assembleUserData(useLegacyUdf, names, userDataRequest.region, userDataRequest.account, udfTemplate)
     return replaceUserDataTokens(names, userDataRequest, rawUserData)
   }
 
-  String assembleUserData(boolean legacyUdf, Names names, String region, String account) {
+  String assembleUserData(boolean legacyUdf, Names names, String region, String account, String udfTemplate) {
     def udfRoot = localFileUserDataProperties.udfRoot + (legacyUdf ? '/legacy' : '')
 
     String cluster = names.cluster
@@ -118,6 +121,15 @@ class LocalFileUserDataProvider implements UserDataProvider {
       udfPaths << "${udfRoot}/custom.region.d/${region}/${cluster}-${account}"
       udfPaths << "${udfRoot}/custom.region.d/${region}/${names.group}-${account}"
       udfPaths << "${udfRoot}/udf2"
+    }
+
+    // If a udfTemplate is specified we do not assume compatibility with existing udf templates and
+    // so we set udfPaths to the specified udf template file
+    if (udfTemplate != null && !udfTemplate.isEmpty()) {
+      String udfTemplateFile = localFileUserDataProperties.udfTemplates[udfTemplate]
+      if (udfTemplateFile != null && !udfTemplateFile.isEmpty()) {
+        udfPaths = [udfTemplateFile]
+      }
     }
 
     // Concat all the Unix shell templates into one string

@@ -28,5 +28,6 @@ class LocalFileUserDataProperties {
    */
   boolean enabled = true
   String udfRoot = '/apps/nflx-udf'
+  Map<String, String> udfTemplates
   boolean defaultLegacyUdf = false
 }

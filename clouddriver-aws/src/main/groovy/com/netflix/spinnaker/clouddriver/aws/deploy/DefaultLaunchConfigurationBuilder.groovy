@@ -133,11 +133,11 @@ class DefaultLaunchConfigurationBuilder implements LaunchConfigurationBuilder {
    * @return the name of the new launch configuration
    */
   @Override
-  String buildLaunchConfiguration(String application, String subnetType, LaunchConfigurationSettings settings, Boolean legacyUdf) {
+  String buildLaunchConfiguration(String application, String subnetType, LaunchConfigurationSettings settings, Boolean legacyUdf, String udfTemplate) {
     settings = setAppSecurityGroup(application, subnetType, deployDefaults, securityGroupService, settings)
 
     String name = createName(settings)
-    String userData = getUserData(name, settings, legacyUdf)
+    String userData = getUserData(name, settings, legacyUdf, udfTemplate)
     createLaunchConfiguration(name, userData, settings)
   }
 
@@ -169,9 +169,9 @@ class DefaultLaunchConfigurationBuilder implements LaunchConfigurationBuilder {
     }
   }
 
-  private String getUserData(String launchConfigName, LaunchConfigurationSettings settings, Boolean legacyUdf) {
+  private String getUserData(String launchConfigName, LaunchConfigurationSettings settings, Boolean legacyUdf, String udfTemplate) {
     String data = userDataProviders?.collect { udp ->
-      udp.getUserData(launchConfigName, settings, legacyUdf)
+      udp.getUserData(launchConfigName, settings, legacyUdf, udfTemplate)
     }?.join("\n")
     String userDataDecoded = new String((settings.base64UserData ?: '').decodeBase64(), Charset.forName("UTF-8"))
     data = [data, userDataDecoded].findResults { it }.join("\n")

@@ -49,12 +49,16 @@ public interface UserDataProvider {
       String account,
       String environment,
       String accountType,
-      Boolean legacyUdf) {
+      Boolean legacyUdf,
+      String udfTemplate) {
     return "";
   }
 
   default String getUserData(
-      String launchConfigName, LaunchConfigurationSettings settings, Boolean legacyUdf) {
+      String launchConfigName,
+      LaunchConfigurationSettings settings,
+      Boolean legacyUdf,
+      String udfTemplate) {
     return getUserData(
         settings.getBaseName(),
         launchConfigName,
@@ -62,7 +66,8 @@ public interface UserDataProvider {
         settings.getAccount(),
         settings.getEnvironment(),
         settings.getAccountType(),
-        legacyUdf);
+        legacyUdf,
+        udfTemplate);
   }
 
   default String getUserData(UserDataRequest userDataRequest) {
@@ -83,6 +88,7 @@ public interface UserDataProvider {
     Boolean legacyUdf;
     String iamRole;
     String imageId;
+    String udfTemplate;
 
     @JsonPOJOBuilder(withPrefix = "")
     public static class UserDataRequestBuilder {}

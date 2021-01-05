@@ -76,6 +76,7 @@ class AutoScalingWorker {
   private String keyPair
   private String base64UserData
   private Boolean legacyUdf
+  private String udfTemplate
   private Integer sequence
   private Boolean ignoreSequence
   private Boolean startDisabled
@@ -194,7 +195,7 @@ class AutoScalingWorker {
               launchTemplateId: launchTemplate.launchTemplateId,
               version: launchTemplate.latestVersionNumber)
     } else {
-      launchConfigName = regionScopedProvider.getLaunchConfigurationBuilder().buildLaunchConfiguration(application, subnetType, settings, legacyUdf)
+      launchConfigName = regionScopedProvider.getLaunchConfigurationBuilder().buildLaunchConfiguration(application, subnetType, settings, legacyUdf, udfTemplate)
     }
 
     task.updateStatus AWS_PHASE, "Deploying ASG: $asgName"
